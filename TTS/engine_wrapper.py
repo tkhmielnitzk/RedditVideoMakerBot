@@ -144,11 +144,18 @@ class TTSEngine:
             print("OSError")
 
     def call_tts(self, filename: str, text: str):
-        self.tts_module.run(
-            text,
-            filepath=f"{self.path}/{filename}.mp3",
-            random_voice=settings.config["settings"]["tts"]["random_voice"],
-        )
+        if settings.config["settings"]["tts"]["voice_choice"] == "googletranslate":
+            # GTTS does not have the argument 'random_voice'
+            self.tts_module.run(
+                text,
+                filepath=f"{self.path}/{filename}.mp3",
+            )
+        else:
+            self.tts_module.run(
+                text,
+                filepath=f"{self.path}/{filename}.mp3",
+                random_voice=settings.config["settings"]["tts"]["random_voice"],
+            )
         # try:
         #     self.length += MP3(f"{self.path}/{filename}.mp3").info.length
         # except (MutagenError, HeaderNotFoundError):
