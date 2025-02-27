@@ -12,6 +12,8 @@ from moviepy.video.io.ffmpeg_tools import ffmpeg_extract_subclip
 from utils import settings
 from utils.console import print_step, print_substep
 
+import random
+
 
 def load_background_options():
     background_options = {}
@@ -64,6 +66,8 @@ def get_background_config(mode: str):
     except AttributeError:
         print_substep("No background selected. Picking random background'")
         choice = None
+
+
 
     # Handle default / not supported background using default option.
     # Default : pick random from supported background.

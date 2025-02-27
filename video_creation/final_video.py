@@ -229,7 +229,7 @@ def make_final_video(
         elif settings.config["settings"]["storymodemethod"] == 1:
             audio_clips = [
                 ffmpeg.input(f"assets/temp/{reddit_id}/mp3/postaudio-{i}.mp3")
-                for i in track(range(number_of_clips + 1), "Collecting the audio files...")
+                for i in track(range(number_of_clips), "Collecting the audio files...")
             ]
             audio_clips.insert(0, ffmpeg.input(f"assets/temp/{reddit_id}/mp3/title.mp3"))
 
@@ -273,10 +273,12 @@ def make_final_video(
     font_color = "#000000"
     padding = 5
 
-    # create_fancy_thumbnail(image, text, text_color, padding
-    title_img = create_fancy_thumbnail(title_template, title, font_color, padding)
+    ###### ATTENTION IT WAS CHANGED TO HAVE THE PICTURE TOO
+    # # create_fancy_thumbnail(image, text, text_color, padding
+    # title_img = create_fancy_thumbnail(title_template, title, font_color, padding)
 
-    title_img.save(f"assets/temp/{reddit_id}/png/title.png")
+    # title_img.save(f"assets/temp/{reddit_id}/png/title.png")
+
     image_clips.insert(
         0,
         ffmpeg.input(f"assets/temp/{reddit_id}/png/title.png")["v"].filter(
@@ -311,7 +313,7 @@ def make_final_video(
             )
             current_time += audio_clips_durations[0]
         elif settings.config["settings"]["storymodemethod"] == 1:
-            for i in track(range(0, number_of_clips + 1), "Collecting the image files..."):
+            for i in track(range(0, number_of_clips), "Collecting the image files..."):
                 image_clips.append(
                     ffmpeg.input(f"assets/temp/{reddit_id}/png/img{i}.png")["v"].filter(
                         "scale", screenshot_width, -1
@@ -319,29 +321,48 @@ def make_final_video(
                 )
                 background_clip = background_clip.overlay(
                     image_clips[i],
-                    enable=f"between(t,{current_time},{current_time + audio_clips_durations[i]})",
+                    enable=f"between(t,{current_time},{current_time + audio_clips_durations[i+1]})",
                     x="(main_w-overlay_w)/2",
                     y="(main_h-overlay_h)/2",
                 )
-                current_time += audio_clips_durations[i]
+                current_time += audio_clips_durations[i+1]
     else:
-        for i in range(0, number_of_clips + 1):
+
+        background_clip = background_clip.overlay(
+            image_clips[0],
+            enable=f"between(t,{current_time},{current_time + audio_clips_durations[0]})",
+            x="(main_w-overlay_w)/2",
+            y="(main_h-overlay_h)/2",
+            )
+        current_time += audio_clips_durations[0]
+
+        for i in range(number_of_clips):
+            
+            # check if path f"assets/temp/{reddit_id}/png/comment_{i}.png" exists
+            if os.path.exists(f"assets/temp/{reddit_id}/png/comment_{i}.png"):
+                temp_path = f"assets/temp/{reddit_id}/png/comment_{i}.png"
+            elif os.path.exists(f"assets/temp/{reddit_id}/png/comment_{i}_parent.png"):
+                temp_path = f"assets/temp/{reddit_id}/png/comment_{i}_parent.png"
+            else:
+                raise FileNotFoundError(f"assets/temp/{reddit_id}/png/comment_{i}.png or assets/temp/{reddit_id}/png/comment_{i}_parent.png not found")
+
             image_clips.append(
-                ffmpeg.input(f"assets/temp/{reddit_id}/png/comment_{i}.png")["v"].filter(
+                ffmpeg.input(temp_path)["v"].filter(
                     "scale", screenshot_width, -1
                 )
             )
-            image_overlay = image_clips[i].filter("colorchannelmixer", aa=opacity)
+
+            image_overlay = image_clips[i+1].filter("colorchannelmixer", aa=opacity) # +1 because image_clips already includes the title
             assert (
                 audio_clips_durations is not None
             ), "Please make a GitHub issue if you see this. Ping @JasonLovesDoggo on GitHub."
             background_clip = background_clip.overlay(
                 image_overlay,
-                enable=f"between(t,{current_time},{current_time + audio_clips_durations[i]})",
+                enable=f"between(t,{current_time},{current_time + audio_clips_durations[i+1] - 0.1})",
                 x="(main_w-overlay_w)/2",
                 y="(main_h-overlay_h)/2",
             )
-            current_time += audio_clips_durations[i]
+            current_time += audio_clips_durations[i+1]
 
     title = re.sub(r"[^\w\s-]", "", reddit_obj["thread_title"])
     idx = re.sub(r"[^\w\s-]", "", reddit_obj["thread_id"])

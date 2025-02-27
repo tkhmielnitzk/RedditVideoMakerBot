@@ -9,6 +9,8 @@ from TTS.GTTS import GTTS
 from TTS.pyttsx import pyttsx
 from TTS.streamlabs_polly import StreamlabsPolly
 from TTS.TikTok import TikTok
+from TTS.macos_say import MacOSsay
+from TTS.linux_espeak import LinuxEspeak
 from utils import settings
 from utils.console import print_step, print_table
 
@@ -21,6 +23,8 @@ TTSProviders = {
     "TikTok": TikTok,
     "pyttsx": pyttsx,
     "ElevenLabs": elevenlabs,
+    "MacOS": MacOSsay,
+    "Linux": LinuxEspeak
 }
 
 

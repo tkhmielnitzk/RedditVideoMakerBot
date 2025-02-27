@@ -1,0 +1,59 @@
+services:
+  my-app:
+    # image: .  # Remplace par l'image correcte si nécessaire
+    build: .
+    container_name: my_bot
+    volumes:
+      - ./results:/app/results  # Monte le dossier results local dans /app/results du conteneur
+      - ./assets:/app/assets  # Monte le dossier assets local dans /app/assets du conteneur
+      - ./video_creation/data:/app/video_creation/data  # Monte le dossier data local dans /app/video_creation/data du conteneur
+    restart: "no"  # Ne redémarre pas automatiquement après l'exécution
+
+  postgres:
+    image: postgres:13
+    container_name: postgres_airflow
+    restart: always
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  airflow-webserver:
+    # image: apache/airflow:2.7.0
+    build: youtube/.
+    container_name: airflow_webserver
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__SQL_ALCHEMY_CONN=postgresql+psycopg2://airflow:airflow@postgres/airflow
+      - AIRFLOW__WEBSERVER__DEFAULT_USER=airflow
+      - AIRFLOW__WEBSERVER__DEFAULT_PASSWORD=airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./scripts:/opt/airflow/scripts
+      - ./to_share:/opt/airflow/to_share
+      - ./to_delete:/opt/airflow/to_delete
+    ports:
+      - "8080:8080"
+    command: webserver
+
+  airflow-scheduler:
+    # image: apache/airflow:2.7.0
+    build: youtube/.
+    container_name: airflow_scheduler
+    restart: always
+    depends_on:
+      - airflow-webserver
+    volumes:
+      - ./youtube/dags:/opt/airflow/dags
+      - ./youtube//scripts:/opt/airflow/scripts
+      - ./to_share:/opt/airflow/to_share
+      - ./to_delete:/opt/airflow/to_delete
+    command: scheduler
+
+volumes:
+  postgres_data:
