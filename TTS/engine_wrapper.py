@@ -18,6 +18,8 @@ DEFAULT_MAX_LENGTH: int = (
     50  # Video length variable, edit this on your own risk. It should work, but it's not supported
 )
 
+# If the comment is a meme (contains [gif]), add a longer silence. 
+duration_silence_meme = 2
 
 class TTSEngine:
     """Calls the given TTS engine to reduce code duplication and allow multiple TTS engines.
@@ -96,6 +98,8 @@ class TTSEngine:
                     len(comment["comment_body"]) > self.tts_module.max_chars
                 ):  # Split the comment if it is too long
                     self.split_post(comment["comment_body"], idx)  # Split the comment
+                elif '[gif]' in comment["comment_body"]:
+                    self.create_silence_mp3(f"{idx}", duration=duration_silence_meme)
                 else:  # If the comment is not too long, just call the tts engine
                     self.call_tts(f"{idx}", process_text(comment["comment_body"]))
 
@@ -149,10 +153,6 @@ class TTSEngine:
             filepath=f"{self.path}/{filename}.mp3",
             random_voice=settings.config["settings"]["tts"]["random_voice"],
         )
-        # try:
-        #     self.length += MP3(f"{self.path}/{filename}.mp3").info.length
-        # except (MutagenError, HeaderNotFoundError):
-        #     self.length += sox.file_info.duration(f"{self.path}/{filename}.mp3")
         try:
             clip = AudioFileClip(f"{self.path}/{filename}.mp3")
             self.last_clip_length = clip.duration
@@ -161,15 +161,40 @@ class TTSEngine:
         except:
             self.length = 0
 
-    def create_silence_mp3(self):
-        silence_duration = settings.config["settings"]["tts"]["silence_duration"]
+    # def create_silence_mp3(self):
+    #     silence_duration = settings.config["settings"]["tts"]["silence_duration"]
+    #     silence = AudioClip(
+    #         make_frame=lambda t: np.sin(440 * 2 * np.pi * t),
+    #         duration=silence_duration,
+    #         fps=44100,
+    #     )
+    #     silence = volumex(silence, 0)
+    #     silence.write_audiofile(f"{self.path}/silence.mp3", fps=44100, verbose=False, logger=None)
+
+
+    def create_silence_mp3(self, filename: str = "silence", duration: int = None):
+        """Creates a silence audio file.
+
+        Args:
+            filename (str): The filename for the silence MP3.
+            duration (int, optional): The duration of silence in seconds. Defaults to 
+                                    transition silence from settings.
+        """
+        # If no custom duration is provided, use the default transition silence duration
+        silence_duration = duration if duration else settings.config["settings"]["tts"]["silence_duration"]
+
         silence = AudioClip(
             make_frame=lambda t: np.sin(440 * 2 * np.pi * t),
             duration=silence_duration,
             fps=44100,
         )
-        silence = volumex(silence, 0)
-        silence.write_audiofile(f"{self.path}/silence.mp3", fps=44100, verbose=False, logger=None)
+        silence = volumex(silence, 0)  # Set volume to 0
+        silence.write_audiofile(f"{self.path}/{filename}.mp3", fps=44100, verbose=False, logger=None)
+
+        if filename != "silence":
+            # Update the total length tracking
+            self.last_clip_length = silence_duration
+            self.length += silence_duration
 
 
 def process_text(text: str, clean: bool = True):

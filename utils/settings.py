@@ -15,6 +15,8 @@ def crawl(obj: dict, func=lambda x, y: print(x, y, end="\n"), path=None):
     if path is None:  # path Default argument value is mutable
         path = []
     for key in obj.keys():
+        if key == 'background_video':
+            print(key)
         if type(obj[key]) is dict:
             crawl(obj[key], func, path + [key])
             continue
@@ -25,6 +27,9 @@ def check(value, checks, name):
     def get_check_value(key, default_result):
         return checks[key] if key in checks else default_result
 
+    if name == "background_video":
+        print(name)
+        
     incorrect = False
     if value == {}:
         incorrect = True
@@ -35,10 +40,6 @@ def check(value, checks, name):
             incorrect = True
 
     if (
-        not incorrect and "options" in checks and value not in checks["options"]
-    ):  # FAILSTATE Value is not one of the options
-        incorrect = True
-    if (
         not incorrect
         and "regex" in checks
         and (
@@ -46,6 +47,11 @@ def check(value, checks, name):
             or not isinstance(value, str)
         )
     ):  # FAILSTATE Value doesn't match regex, or has regex but is not a string.
+        incorrect = True
+
+    if (
+        not incorrect and "options" in checks and value not in checks["options"]
+    ):  # FAILSTATE Value is not one of the options
         incorrect = True
 
     if (
@@ -167,4 +173,6 @@ If you see any prompts, that means that you have unset/incorrectly set variables
 
 if __name__ == "__main__":
     directory = Path().absolute()
-    check_toml(f"{directory}/utils/.config.template.toml", "config.toml")
+    print(directory)
+    check_toml(f"{directory}/utils/.config.template.toml", f"{directory}/config.toml")
+

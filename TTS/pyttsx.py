@@ -1,6 +1,7 @@
 import random
 
 import pyttsx3
+import os
 
 from utils import settings
 
@@ -14,7 +15,7 @@ class pyttsx:
         self,
         text: str,
         filepath: str,
-        random_voice=False,
+        random_voice=False
     ):
         voice_id = settings.config["settings"]["tts"]["python_voice"]
         voice_num = settings.config["settings"]["tts"]["py_voice_num"]
@@ -30,13 +31,29 @@ class pyttsx:
             i = +1
         if random_voice:
             voice_id = self.randomvoice()
-        engine = pyttsx3.init()
-        voices = engine.getProperty("voices")
-        engine.setProperty(
-            "voice", voices[voice_id].id
-        )  # changing index changes voices but ony 0 and 1 are working here
-        engine.save_to_file(text, f"{filepath}")
-        engine.runAndWait()
+        
+        self.use_pyttsx3(text, filepath, voice_id)
 
     def randomvoice(self):
         return random.choice(self.voices)
+
+    def use_say(self, text):
+        """
+        Use the macOS 'say' command for text-to-speech.
+        """
+        command = f'say "{text}"'
+        os.system(command)
+
+    def use_pyttsx3(self, text, filepath, voice_id):
+        """
+        Use pyttsx3 for text-to-speech and save the file.
+        """
+        engine = pyttsx3.init(driverName='nsss')
+        voices = engine.getProperty("voices")
+        try:
+            engine.setProperty("voice", voices[voice_id].id)  # Changing voice
+        except IndexError:
+            print(f"Voice ID {voice_id} is out of range, defaulting to 0.")
+            engine.setProperty("voice", voices[0].id)  # Fallback to the first voice
+        engine.save_to_file(text, f"{filepath}")
+        engine.runAndWait()

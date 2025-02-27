@@ -1,0 +1,15 @@
+# Apache Airflow et ses dépendances
+apache-airflow==2.7.0
+apache-airflow-providers-google
+
+# API YouTube
+google-auth
+google-auth-oauthlib
+google-auth-httplib2
+google-api-python-client
+
+# Gestion des variables d'environnement
+python-dotenv
+
+# Autres dépendances utiles
+requests

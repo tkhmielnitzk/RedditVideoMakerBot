@@ -128,7 +128,12 @@ def get_subreddit_threads(POST_ID: str):
         else:
             content["thread_post"] = submission.selftext
     else:
-        for top_level_comment in submission.comments:
+        # get from config max_comments_in_video
+        max_comments_in_video = int(settings.config["reddit"]["thread"]["max_comments_in_video"])
+        
+        for n_comment, top_level_comment in enumerate(submission.comments):
+            if n_comment >= max_comments_in_video:
+                break
             if isinstance(top_level_comment, MoreComments):
                 continue
 
