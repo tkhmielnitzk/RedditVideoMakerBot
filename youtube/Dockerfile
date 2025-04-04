@@ -1,18 +1,15 @@
-# FROM python:3.9
+# Use an official lightweight Python image
+FROM python:3.9-slim
 
-# WORKDIR /app
+# Set the working directory inside the container
+WORKDIR /app
 
-# COPY requirements.txt .
-# RUN pip install --no-cache-dir -r requirements.txt
+# Copy the necessary files
+COPY manage_videos.py . 
+COPY requirements.txt . 
 
-# COPY . .
-
-# CMD ["python", "scripts/manager.py"]
-
-FROM apache/airflow:2.7.0
-
-# Install any dependencies your scripts need
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Optionally copy your custom scripts into the image if needed
-COPY ./scripts /opt/airflow/scripts
+# Keep container running in idle mode (Airflow will trigger the script)
+CMD ["tail", "-f", "/dev/null"]

@@ -4,11 +4,13 @@ from typing import Final
 from utils import settings
 
 eng_voices: Final[tuple] = (
-    "en-us+f1",  # Female voice 1
-    "en-us+f2",  # Female voice 2
-    "en-us+m1",  # Male voice 1
-    "en-us+m2",  # Male voice 2
-    "en-us+m3",  # Male voice 3
+    # "en-us+f1",  # Female voice 1
+    # "en-us+f2",  # Female voice 2
+    # "en-us+m1",  # Male voice 1
+    # "en-us+m2",  # Male voice 2
+    # "en-us+m3",  # Male voice 3
+    "en",
+    "en-us"
 )
 
 class LinuxEspeak:
@@ -31,7 +33,9 @@ class LinuxEspeak:
 
     @staticmethod
     def randomvoice() -> str:
-        return random.choice(eng_voices)
+        to_return = random.choice(eng_voices)
+        print(f"Using voice: {to_return}")
+        return to_return
 
     def use_espeak(self, text, filepath, voice):
         """
@@ -41,7 +45,7 @@ class LinuxEspeak:
         temp_wav = "temp.wav"
 
         # Generate speech with espeak
-        espeak_command = f'espeak -v {voice} -s 160 -w "{temp_wav}" "{escaped_text}"'
+        espeak_command = f'espeak-ng -v {voice} -s 160 -w "{temp_wav}" "{escaped_text}"'
         return_code = os.system(espeak_command)
 
         if return_code != 0:

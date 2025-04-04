@@ -5,7 +5,7 @@ from praw.models import MoreComments
 from prawcore.exceptions import ResponseException
 
 from utils import settings
-from utils.ai_methods import sort_by_similarity
+# from utils.ai_methods import sort_by_similarity
 from utils.console import print_step, print_substep
 from utils.posttextparser import posttextparser
 from utils.subreddit import get_subreddit_undone
@@ -77,17 +77,17 @@ def get_subreddit_threads(POST_ID: str):
         and len(str(settings.config["reddit"]["thread"]["post_id"]).split("+")) == 1
     ):
         submission = reddit.submission(id=settings.config["reddit"]["thread"]["post_id"])
-    elif settings.config["ai"]["ai_similarity_enabled"]:  # ai sorting based on comparison
-        threads = subreddit.hot(limit=50)
-        keywords = settings.config["ai"]["ai_similarity_keywords"].split(",")
-        keywords = [keyword.strip() for keyword in keywords]
-        # Reformat the keywords for printing
-        keywords_print = ", ".join(keywords)
-        print(f"Sorting threads by similarity to the given keywords: {keywords_print}")
-        threads, similarity_scores = sort_by_similarity(threads, keywords)
-        submission, similarity_score = get_subreddit_undone(
-            threads, subreddit, similarity_scores=similarity_scores
-        )
+    # elif settings.config["ai"]["ai_similarity_enabled"]:  # ai sorting based on comparison
+    #     threads = subreddit.hot(limit=50)
+    #     keywords = settings.config["ai"]["ai_similarity_keywords"].split(",")
+    #     keywords = [keyword.strip() for keyword in keywords]
+    #     # Reformat the keywords for printing
+    #     keywords_print = ", ".join(keywords)
+    #     print(f"Sorting threads by similarity to the given keywords: {keywords_print}")
+    #     threads, similarity_scores = sort_by_similarity(threads, keywords)
+    #     submission, similarity_score = get_subreddit_undone(
+    #         threads, subreddit, similarity_scores=similarity_scores
+    #     )
     else:
         threads = subreddit.hot(limit=25)
         submission = get_subreddit_undone(threads, subreddit)

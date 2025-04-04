@@ -3,7 +3,7 @@ FROM python:3.10.14-slim
 # Install system dependencies
 RUN apt update && apt-get install -y \
     ffmpeg \
-    espeak \
+    espeak-ng \
     python3-pip \
     wget \
     curl \
@@ -45,4 +45,6 @@ RUN pip install -r requirements.txt
 RUN playwright install --with-deps
 
 # Run the application
-CMD ["python3", "main.py"]
+# CMD ["python3", "main.py"]
+# commande to run the app but nothing else
+CMD ["tail", "-f", "/dev/null"]

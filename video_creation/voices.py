@@ -2,14 +2,14 @@ from typing import Tuple
 
 from rich.console import Console
 
-from TTS.aws_polly import AWSPolly
-from TTS.elevenlabs import elevenlabs
+# from TTS.aws_polly import AWSPolly
+# from TTS.elevenlabs import elevenlabs
 from TTS.engine_wrapper import TTSEngine
-from TTS.GTTS import GTTS
-from TTS.pyttsx import pyttsx
-from TTS.streamlabs_polly import StreamlabsPolly
-from TTS.TikTok import TikTok
-from TTS.macos_say import MacOSsay
+# from TTS.GTTS import GTTS
+# from TTS.pyttsx import pyttsx
+# from TTS.streamlabs_polly import StreamlabsPolly
+# from TTS.TikTok import TikTok
+# from TTS.macos_say import MacOSsay
 from TTS.linux_espeak import LinuxEspeak
 from utils import settings
 from utils.console import print_step, print_table
@@ -17,13 +17,13 @@ from utils.console import print_step, print_table
 console = Console()
 
 TTSProviders = {
-    "GoogleTranslate": GTTS,
-    "AWSPolly": AWSPolly,
-    "StreamlabsPolly": StreamlabsPolly,
-    "TikTok": TikTok,
-    "pyttsx": pyttsx,
-    "ElevenLabs": elevenlabs,
-    "MacOS": MacOSsay,
+    # "GoogleTranslate": GTTS,
+    # "AWSPolly": AWSPolly,
+    # "StreamlabsPolly": StreamlabsPolly,
+    # "TikTok": TikTok,
+    # "pyttsx": pyttsx,
+    # "ElevenLabs": elevenlabs,
+    # "MacOS": MacOSsay,
     "Linux": LinuxEspeak
 }
 
