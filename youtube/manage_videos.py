@@ -243,12 +243,12 @@ def manage_videos_to_share(title, description, category, keywords, privacyStatus
         pass
     else:
         one_video_path = list_videos_path[0]
-        # upload_video_youtube(one_video_path, 
-        #                      title,
-        #                      description,
-        #                      category,
-        #                      keywords,
-        #                      privacyStatus)
+        upload_video_youtube(one_video_path, 
+                             title,
+                             description,
+                             category,
+                             keywords,
+                             privacyStatus)
         print('Uploading video')
         shutil.move(one_video_path, to_delete_path / one_video_path.name)
 
