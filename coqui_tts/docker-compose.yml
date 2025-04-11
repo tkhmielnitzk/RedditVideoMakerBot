@@ -1,0 +1,17 @@
+version: "3.9"
+
+services:
+  coqui-api:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./tts-output:/app/tts-output
+
+#curl -X POST http://localhost:8000/tts \                         
+# -H "Content-Type: application/json" \
+# -d '{
+#   "text": "Hello, this is Coqui with mp3 output.",
+#   "model_name": "tts_models/en/ljspeech/tacotron2-DDC",
+#   "out_path": "tts-output/hello.mp3"
+# }'
