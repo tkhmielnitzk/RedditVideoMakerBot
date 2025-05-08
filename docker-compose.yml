@@ -88,7 +88,6 @@ x-airflow-common:
     &airflow-common-depends-on
     postgres:
       condition: service_healthy
-
 services:
 
   my_bot:
@@ -101,8 +100,21 @@ services:
       - ./video_creation/data:/app/video_creation/data  # Monte le dossier data local dans /app/video_creation/data du conteneur
     restart: "no"  # Ne redémarre pas automatiquement après l'exécution
 
+  coqui-api:
+    build: ./coqui_tts/
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./assets/temp:/app/tts-output
+    restart: always
 
-
+  # curl -X POST http://localhost:8000/tts -H "Content-Type: application/json" -d @- <<EOF
+  # {
+  #   "text": "I'm older but wiser than ever.",
+  #   "model_name": "tts_models/en/ljspeech/tacotron2-DDC",
+  #   "out_path": "tts-output/hello.mp3"
+  # }
+  # EOF
 
   postgres: 
     image: postgres:13
@@ -250,6 +262,7 @@ services:
       - ./results/to_delete:/app/data/to_delete  # Video storage
       - ./results/to_post:/app/data/to_post  # Video storage
       - ./client_secret.json:/app/client_secret.json  # OAuth credentials
+      - ./youtube/manage_videos.py-oauth2.json:/app/manage_videos.py-oauth2.json
     environment:
       CLIENT_SECRETS_FILE: "/app/client_secret.json"
     command: ["tail", "-f", "/dev/null"]  # Keep container running without executing the script

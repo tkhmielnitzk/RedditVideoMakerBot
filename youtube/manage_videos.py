@@ -11,6 +11,7 @@ import random
 import sys
 import time
 from datetime import datetime
+from filelock import FileLock, Timeout
 
 import argparse
 from apiclient.discovery import build
@@ -19,6 +20,7 @@ from apiclient.http import MediaFileUpload
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 from oauth2client.tools import argparser, run_flow
+from httplib2 import Http
 
 
 # Explicitly tell the underlying HTTP transport library not to retry, since
@@ -85,20 +87,48 @@ path_root = Path(__file__).parent.parent
 path_data = path_root /"app"/ "data"
 
 
+# OLD VERSION
+# def get_authenticated_service(args):
+#   flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
+#     scope=YOUTUBE_UPLOAD_SCOPE,
+#     message=MISSING_CLIENT_SECRETS_MESSAGE)
+
+#   storage = Storage("%s-oauth2.json" % sys.argv[0])
+#   #   storage = Storage('oauth2.json') 
+#   credentials = storage.get()
+
+#   if credentials is None or credentials.invalid:
+#     credentials = run_flow(flow, storage, args)
+
+#   return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+#     http=credentials.authorize(httplib2.Http()))
+
 def get_authenticated_service(args):
-  flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
-    scope=YOUTUBE_UPLOAD_SCOPE,
-    message=MISSING_CLIENT_SECRETS_MESSAGE)
+    flow = flow_from_clientsecrets(CLIENT_SECRETS_FILE,
+                                   scope=YOUTUBE_UPLOAD_SCOPE,
+                                   message=MISSING_CLIENT_SECRETS_MESSAGE)
+    
+    storage = Storage("%s-oauth2.json" % sys.argv[0])
+    credentials = storage.get()
 
-  storage = Storage("%s-oauth2.json" % sys.argv[0])
-  #   storage = Storage('oauth2.json') 
-  credentials = storage.get()
+    # Vérifie si les credentials sont invalides ou expirés
+    if credentials is None or credentials.invalid:
+        try:
+            if credentials and credentials.expired and credentials.refresh_token:
+                # Essaie de rafraîchir les credentials avec le refresh_token
+                credentials.refresh(Http())
+            else:
+                # Si le refresh échoue ou il n'y a pas de refresh_token, relance le flow OAuth2
+                print("Le token est invalide ou expiré. Relance le flow OAuth2...")
+                os.remove("%s-oauth2.json" % sys.argv[0])  # Supprime le token pour en générer un nouveau
+                credentials = run_flow(flow, storage, args)  # Demande une nouvelle autorisation
 
-  if credentials is None or credentials.invalid:
-    credentials = run_flow(flow, storage, args)
+        except Exception as e:
+            print(f"Erreur lors du rafraîchissement du token ou du flow OAuth2: {e}")
+            raise
 
-  return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
-    http=credentials.authorize(httplib2.Http()))
+    return build(YOUTUBE_API_SERVICE_NAME, YOUTUBE_API_VERSION,
+                 http=credentials.authorize(Http()))
 
 def initialize_upload(youtube, options):
   tags = None
@@ -273,7 +303,13 @@ if __name__ == "__main__":
     keywords = "cinema, short, movie"
     privacyStatus = "public"
 
-    print('manage_videos_to_share')
-    manage_videos_to_share(title, description, category, keywords, privacyStatus)
-    print('manage_videos_to_delete')
-    manage_videos_to_delete()
+    lock_path = "/tmp/youtube_upload.lock"
+    lock = FileLock(lock_path, timeout=1)
+    try:
+        with lock:
+          print('manage_videos_to_share')
+          manage_videos_to_share(title, description, category, keywords, privacyStatus)
+          print('manage_videos_to_delete')
+          manage_videos_to_delete()
+    except Timeout:
+      print("Another upload is in progress, skipping this run.")
