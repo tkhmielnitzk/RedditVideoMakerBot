@@ -106,7 +106,7 @@ services:
       - "8000:8000"
     volumes:
       - ./assets/temp:/app/tts-output
-    restart: always
+    restart: "always"
 
   # curl -X POST http://localhost:8000/tts -H "Content-Type: application/json" -d @- <<EOF
   # {
@@ -263,8 +263,11 @@ services:
       - ./results/to_post:/app/data/to_post  # Video storage
       - ./client_secret.json:/app/client_secret.json  # OAuth credentials
       - ./youtube/manage_videos.py-oauth2.json:/app/manage_videos.py-oauth2.json
+      - ./youtube/token.json:/app/token.json
     environment:
       CLIENT_SECRETS_FILE: "/app/client_secret.json"
+    ports:
+      - "8081:8081"
     command: ["tail", "-f", "/dev/null"]  # Keep container running without executing the script
 
 volumes:

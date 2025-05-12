@@ -11,7 +11,7 @@ from TTS.engine_wrapper import TTSEngine
 # from TTS.TikTok import TikTok
 # from TTS.macos_say import MacOSsay
 from TTS.linux_espeak import LinuxEspeak
-from TTS.coqui_TTS import LinuxTTS
+from TTS.coqui_TTS import CoquiTTS
 from utils import settings
 from utils.console import print_step, print_table
 
@@ -26,7 +26,7 @@ TTSProviders = {
     # "ElevenLabs": elevenlabs,
     # "MacOS": MacOSsay,
     "Linux": LinuxEspeak,
-    "Coqui": LinuxTTS
+    "Coqui": CoquiTTS
 }
 
 

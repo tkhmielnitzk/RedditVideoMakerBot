@@ -6,6 +6,7 @@ WORKDIR /app
 
 # Copy the necessary files
 COPY manage_videos.py . 
+COPY generate_token.py .
 COPY requirements.txt . 
 
 # Install dependencies

@@ -10,10 +10,11 @@ eng_voices: Final[tuple] = (
     "tts_models/en/ljspeech/tacotron2-DDC",        # English voice
 )
 
-class LinuxTTS:
+class CoquiTTS:
     def __init__(self):
         self.max_chars = 5000
         self.voices = eng_voices
+        self.speed = 1.4
 
     def run(
         self,
@@ -26,33 +27,52 @@ class LinuxTTS:
         else:
             voice = settings.config["settings"]["tts"]["python_voice"]
 
-        self.use_coqui(text, filepath, voice)
+        temp_path = os.path.join(
+            os.path.dirname(filepath),
+            "temp.wav"
+        )
+        # self.use_coqui(text, filepath, voice)
+        self.use_coqui(text, temp_path, voice)
+        self.change_speed(temp_path, filepath, self.speed)
+        # Remove the temporary file
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+        else:
+            print(f"The file {temp_path} does not exist")
 
     @staticmethod
     def randomvoice() -> str:
         to_return = random.choice(eng_voices)
         print(f"Using voice: {to_return}")
         return to_return
+    
+
+    def normalize_unicode_punctuation(self, text):
+        replacements = {
+            "\u2019": "'", "\u2018": "'",
+            "\u201c": '"', "\u201d": '"',
+            "\u2026": "...",
+            "\u2013": "-", "\u2014": "-",
+            "\u00a0": " ", "\u200b": "",
+            "\u2022": "", "\u2122": "",
+            "\u00ae": "", "\u00a9": "",
+        }
+        for uni, char in replacements.items():
+            text = text.replace(uni, char)
+        return text
+    
 
     def use_coqui(self, text, filepath, voice):
         """
         Use 'coqui' to generate a WAV file, then convert it to MP3 using ffmpeg.
         """
         # convert apostrophes to unicode
-        text = text.replace("\u2019", "'")
+        # text = text.replace("\u2019", "'")
+        # text = text.replace("\u2026", "...")
+        text = self.normalize_unicode_punctuation(text)
         escaped_text = json.dumps(text)  # This will escape quotes and special characters automatically
         filepath = filepath.replace("./assets", "assets")
         filepath = filepath.replace("assets/temp", "/app/tts-output")
-        # Generate speech with espeak
-        # coqui_command = f"""curl -X POST http://coqui-api:8000/tts \\
-        #         -H "Content-Type: application/json" \\
-        #         -d @- <<EOF
-        #         {{
-        #         "text": "{escaped_text}",
-        #         "model_name": "{voice}",
-        #         "out_path": "{filepath}"
-        #         }}
-        #         EOF"""
 
         data = {
             "text": escaped_text,
@@ -82,22 +102,15 @@ class LinuxTTS:
 
         print("Speech generation successful.")
 
-#   curl -X POST http://localhost:8000/tts -H "Content-Type: application/json" -d @- <<EOF
-#   {
-#     "text": "I'm older but wiser than ever.",
-#     "model_name": "tts_models/en/ljspeech/tacotron2-DDC",
-#     "out_path": "tts-output/hello.mp3"
-#   }
-#   EOF
-        
-
-
-# curl -X POST http://coqui-api:8000/tts 
-#     -H "Content-Type: application/json" 
-#     -d @- <<EOF
-#     {
-#     "text": "First Image of Zoe Saldana's Neytiri in Avatar Fire and Ash'",
-#     "model_name": "tts_models/en/ljspeech/tacotron2-DDC",
-#     "out_path": "/app/tts-output/1kd4m4z/mp3/title.mp3"
-#     }
-#     EOF
+    def change_speed(self, input_path, output_path, speed):
+        """
+        Modify the speed of a WAV file using ffmpeg.
+        """
+        subprocess.run([
+            "ffmpeg",
+            "-i", input_path,
+            "-filter:a", f"atempo={speed}",
+            "-y",  # <--- this is the key
+            "-vn",  # no video
+            output_path
+        ])

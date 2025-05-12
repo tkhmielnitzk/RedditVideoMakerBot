@@ -14,4 +14,5 @@ services:
 #   "text": "Hello, this is Coqui with mp3 output.",
 #   "model_name": "tts_models/en/ljspeech/tacotron2-DDC",
 #   "out_path": "tts-output/hello.mp3"
+# "out_path": "tts-output/1jq.../mp3/hello.mp3"
 # }'

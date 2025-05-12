@@ -19,7 +19,8 @@ with DAG(
     schedule_interval=timedelta(days=1),
     catchup=False,
     max_active_runs=1,
-    concurrency=1
+    concurrency=1,
+    is_paused_upon_creation=True
     ) as dag:
 
     create_video = BashOperator(
