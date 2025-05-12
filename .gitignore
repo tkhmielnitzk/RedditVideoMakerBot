@@ -251,3 +251,5 @@ config.toml
 client_secret.json
 *-oauth2.json
 utils/.config.template.toml
+token.json
+latest
